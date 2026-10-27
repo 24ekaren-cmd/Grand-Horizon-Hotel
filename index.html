@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grand Horizon Hotel — Luxury Stays & Suites</title>
+  
+  <!-- Google Web Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Modular Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Loading Animation Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <span>Loading Grand Horizon Experience…</span>
+  </div>
+
+  <!-- ==============================================================================
+       PAGE 1: AUTHENTICATION (SIGN IN / REGISTER)
+       ============================================================================== -->
+  <div class="page active" id="page-auth">
+    <div class="auth-page">
+      <div class="auth-container">
+        
+        <div class="auth-header">
+          <div class="logo">
+            <i class="fas fa-hotel"></i>
+            <span>Grand Horizon</span>
+          </div>
+          <p>Please sign in to unlock room availability and book your bespoke stay</p>
+        </div>
+
+        <div class="auth-card">
+          <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchAuthTab('login')">
+              <i class="fas fa-sign-in-alt"></i> Sign In
+            </div>
+            <div class="auth-tab" onclick="switchAuthTab('register')">
+              <i class="fas fa-user-plus"></i> Create Account
+            </div>
+          </div>
+
+          <div id="authError" class="auth-error"></div>
+          <div id="authSuccess" class="auth-success"></div>
+
+          <!-- Login Form -->
+          <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+            <div class="auth-group">
+              <label for="loginEmail">Email Address</label>
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="loginEmail" placeholder="e.g. demo@grandhorizon.com" required autocomplete="email">
+            </div>
+            
+            <div class="auth-group">
+              <label for="loginPassword">Password</label>
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-arrow-right"></i> Sign In to Account
+            </button>
+            
+            <div class="demo-account-hint">
+              <strong>Quick Demo Login:</strong><br>
+              Email: <code>demo@grandhorizon.com</code> &bull; Password: <code>password123</code>
+            </div>
+          </form>
+
+          <!-- Registration Form -->
+          <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
+            <div class="auth-group">
+              <label for="regName">Full Legal Name</label>
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" id="regName" placeholder="e.g. Alexander Wright" required>
+            </div>
+
+            <div class="auth-group">
+              <label for="regEmail">Email Address</label>
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="regEmail" placeholder="alexander@example.com" required>
+            </div>
+
+            <div class="auth-group">
+              <label for="regPhone">Mobile Phone</label>
+              <i class="fas fa-phone input-icon"></i>
+              <input type="tel" id="regPhone" placeholder="+1 (555) 019-2834" required>
+            </div>
+
+            <div class="auth-group">
+              <label for="regPassword">Create Password</label>
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" id="regPassword" placeholder="Minimum 6 characters" minlength="6" required>
+            </div>
+
+            <div class="auth-group">
+              <label for="regConfirm">Confirm Password</label>
+              <i class="fas fa-check-circle input-icon"></i>
+              <input type="password" id="regConfirm" placeholder="Re-enter your password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-user-check"></i> Register Account
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================================
+       MAIN APPLICATION (UNLOCKED UPON AUTHENTICATION)
+       ============================================================================== -->
+  <div id="appWrapper" style="display: none;">
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+      <div class="container nav-container">
+        
+        <div class="logo" onclick="navigate('home')">
+          <i class="fas fa-hotel"></i>
+          <span>Grand Horizon</span>
+        </div>
+
+        <button class="nav-toggle" aria-label="Toggle navigation" onclick="toggleNav()">
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <nav>
+          <ul class="nav-links" id="navLinks">
+            <li><a onclick="navigate('home')">Home</a></li>
+            <li><a onclick="navigate('rooms')">Rooms & Suites</a></li>
+            <li><a onclick="navigate('about')">About Us</a></li>
+            <li><a onclick="navigate('contact')">Contact</a></li>
+            
+            <li class="nav-user-panel">
+              <span class="nav-user-badge">
+                <i class="fas fa-user-circle"></i>
+                <span id="navUserName">Guest</span>
+              </span>
+              <button class="btn-export-db" onclick="exportSQLiteDatabase()" title="Download current SQLite database file">
+                <i class="fas fa-database"></i> Export .db
+              </button>
+              <button class="btn-logout" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ==========================================================================
+         PAGE 2: HOME VIEW
+         ========================================================================== -->
+    <main class="page" id="page-home">
+      
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <div class="hero-badge">
+            <i class="fas fa-award"></i> Five-Star Luxury Sanctuary
+          </div>
+          <h1>Welcome to <span class="accent">Grand Horizon</span></h1>
+          <p class="hero-subtitle">Where timeless European heritage converges with bespoke contemporary elegance. Discover your sanctuary in the heart of the city.</p>
+          
+          <!-- Search Engine Form -->
+          <form class="search-form" id="heroSearchForm" onsubmit="searchRooms(event)">
+            <div class="search-group">
+              <label for="heroCheckIn"><i class="fas fa-calendar-check"></i> Check-in Date</label>
+              <input type="date" id="heroCheckIn" required>
+            </div>
+            
+            <div class="search-group">
+              <label for="heroCheckOut"><i class="fas fa-calendar-times"></i> Check-out Date</label>
+              <input type="date" id="heroCheckOut" required>
+            </div>
+            
+            <div class="search-group">
+              <label for="heroGuests"><i class="fas fa-user-friends"></i> Guests</label>
+              <select id="heroGuests">
+                <option value="1">1 Guest (Single)</option>
+                <option value="2" selected>2 Guests (Double)</option>
+                <option value="3">3 Guests (Triple)</option>
+                <option value="4">4 Guests (Family/Group)</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-search">
+              <i class="fas fa-search"></i> Check Availability
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- About Preview -->
+      <section class="about-section">
+        <div class="container">
+          <div class="about-grid">
+            <div class="about-image">
+              <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80" alt="Grand Horizon Hotel Grand Facade">
+            </div>
+            <div class="about-text">
+              <h2>An Unmatched Legacy of <span class="accent">Hospitality</span> Since 1987</h2>
+              <div class="accent-line"></div>
+              <p>For nearly four decades, Grand Horizon has set the global benchmark for bespoke luxury. Situated along the prestigious Downtown Avenue, our iconic property harmonizes neoclassical architecture with modern comfort.</p>
+              <p>Every guest is welcomed with attentive butler service, artisan amenities, and culinary masterpieces crafted by Michelin-starred culinary teams.</p>
+              
+              <div style="margin-top: 24px;">
+                <button class="btn btn-outline" onclick="navigate('about')">
+                  <i class="fas fa-book-open"></i> Read Our Full Story
+                </button>
+              </div>
+
+              <div class="about-stats">
+                <div class="stat-item">
+                  <span class="stat-number">37+</span>
+                  <span class="stat-label">Years of Excellence</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">50K+</span>
+                  <span class="stat-label">Delighted Guests</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">4.9 / 5</span>
+                  <span class="stat-label">Verified Guest Rating</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Signature Features -->
+      <section class="features">
+        <div class="container">
+          <h2 class="section-title">The Grand Horizon Experience</h2>
+          <p class="section-subtitle">Immerse yourself in world-class amenities curated to elevate every moment of your stay</p>
+          
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-concierge-bell"></i></div>
+              <h3>24/7 Butler & Concierge</h3>
+              <p>From private reservations to bespoke city itineraries, our dedicated concierges attend to your every wish.</p>
+            </div>
+            
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-spa"></i></div>
+              <h3>L'Horizon Thermal Spa</h3>
+              <p>Indulge in holistic therapies, hydrotherapy pools, and botanical rejuvenating body treatments.</p>
+            </div>
+            
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-utensils"></i></div>
+              <h3>Michelin-Star Gastronomy</h3>
+              <p>Savour seasonal gourmet tasting menus prepared by internationally acclaimed master chefs.</p>
+            </div>
+            
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fas fa-wifi"></i></div>
+              <h3>High-Speed Fiber Wi-Fi</h3>
+              <p>Seamless gigabit connectivity across all guestrooms, private suites, and verdant garden terraces.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==========================================================================
+         PAGE 3: ROOMS & SUITES LISTING VIEW
+         ========================================================================== -->
+    <div class="page" id="page-rooms">
+      <section class="page-header">
+        <div class="container">
+          <h1>Suites & Accommodations</h1>
+          <p class="search-summary" id="roomsSearchSummary">Discover our selection of meticulously appointed rooms</p>
+        </div>
+      </section>
+
+      <!-- Inline Filter & Date Adjustment Bar -->
+      <section class="search-bar-section">
+        <div class="container">
+          <form class="inline-search" onsubmit="updateSearch(event)">
+            <input type="date" id="inlineCheckIn" title="Check-in Date" required>
+            <input type="date" id="inlineCheckOut" title="Check-out Date" required>
+            <select id="inlineGuests" title="Guest Count">
+              <option value="1">1 Guest</option>
+              <option value="2">2 Guests</option>
+              <option value="3">3 Guests</option>
+              <option value="4">4 Guests</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">
+              <i class="fas fa-sync-alt"></i> Update Search
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Room Cards Display Grid -->
+      <section class="rooms-section">
+        <div class="container">
+          <div class="rooms-grid" id="roomsGrid">
+            <!-- Dynamically populated from SQLite rooms table -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================================================
+         PAGE 4: BOOKING FORM & SUMMARY VIEW
+         ========================================================================== -->
+    <div class="page" id="page-booking">
+      <section class="page-header">
+        <div class="container">
+          <h1>Reserve Your Suite</h1>
+          <p class="search-summary">Review your itinerary and provide guest registration credentials</p>
+        </div>
+      </section>
+
+      <section class="booking-section">
+        <div class="container booking-grid">
+          
+          <!-- Booking Form -->
+          <form class="booking-form" id="bookingForm" onsubmit="submitBooking(event)">
+            <input type="hidden" id="bookRoomId">
+
+            <h2><i class="fas fa-user-check"></i> Guest Information</h2>
+
+            <div class="form-group">
+              <label for="guestName">Full Legal Name <span class="required">*</span></label>
+              <input type="text" id="guestName" placeholder="e.g. John Doe" required>
+            </div>
+
+            <div class="form-group">
+              <label for="guestEmail">Email Address (For Confirmation) <span class="required">*</span></label>
+              <input type="email" id="guestEmail" placeholder="john@example.com" required>
+            </div>
+
+            <div class="form-group">
+              <label for="guestPhone">Direct Mobile Phone <span class="required">*</span></label>
+              <input type="tel" id="guestPhone" placeholder="+1 (555) 000-0000" required>
+            </div>
+
+            <div style="margin-top: 28px;">
+              <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-check-circle"></i> Complete & Confirm Reservation
+              </button>
+            </div>
+          </form>
+
+          <!-- Sticky Summary Card -->
+          <aside class="booking-summary" id="bookingSummary">
+            <!-- Dynamically generated from selection -->
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================================================
+         PAGE 5: CONFIRMATION VIEW
+         ========================================================================== -->
+    <div class="page" id="page-confirmation">
+      <section class="confirmation-section">
+        <div class="container" id="confirmationContent">
+          <!-- Rendered upon successful SQLite insertion -->
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================================================
+         PAGE 6: ABOUT US VIEW
+         ========================================================================== -->
+    <div class="page" id="page-about">
+      <section class="page-header">
+        <div class="container">
+          <h1>Our Legacy & Vision</h1>
+          <p class="search-summary">Over three decades of architectural splendor and warm hospitality</p>
+        </div>
+      </section>
+
+      <!-- Detailed Story -->
+      <section class="about-section">
+        <div class="container">
+          <div class="about-grid">
+            <div class="about-image">
+              <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80" alt="Grand Horizon Lobby and Chandelier">
+            </div>
+            <div class="about-text">
+              <h2>Born from an <span class="accent">Uncompromising Passion</span></h2>
+              <div class="accent-line"></div>
+              <p>In the spring of 1987, pioneering hotelier Margaret Thornton envisioned a haven that blended European residential warmth with uncompromising grandeur. Starting as an exclusive 40-key private residence, Grand Horizon quickly gained global acclaim.</p>
+              <p>Today, our 200-room property is an architectural landmark, celebrated for timeless neoclassical design, hand-carved Italian marble corridors, and world-class hospitality.</p>
+              <p>We pride ourselves on our enduring pledge: <em>"Every guest is family, and every moment is an unforgettable memory."</em></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Amenities Matrix -->
+      <section class="amenities-section">
+        <div class="container">
+          <h2 class="section-title">Comprehensive Hotel Amenities</h2>
+          <p class="section-subtitle">Everything designed to fulfill your stay with ease and luxury</p>
+          
+          <div class="amenities-grid">
+            <div class="amenity-card">
+              <i class="fas fa-swimming-pool"></i>
+              <h4>Heated Rooftop Pool</h4>
+              <p>360-degree skyline vistas and private cabanas</p>
+            </div>
+            <div class="amenity-card">
+              <i class="fas fa-spa"></i>
+              <h4>L'Horizon Spa</h4>
+              <p>Swedish massages, cedar saunas, and steam rooms</p>
+            </div>
+            <div class="amenity-card">
+              <i class="fas fa-dumbbell"></i>
+              <h4>Technogym Studio</h4>
+              <p>State-of-the-art 24-hour training equipment</p>
+            </div>
+            <div class="amenity-card">
+              <i class="fas fa-utensils"></i>
+              <h4>3 Signature Restaurants</h4>
+              <p>Michelin-starred dining, bistro, and tea lounge</p>
+            </div>
+            <div class="amenity-card">
+              <i class="fas fa-cocktail"></i>
+              <h4>The Observatory Bar</h4>
+              <p>Artisan mixology overlooking city sunsets</p>
+            </div>
+            <div class="amenity-card">
+              <i class="fas fa-car"></i>
+              <h4>Complimentary Valet</h4>
+              <p>Secure underground parking with EV chargers</p>
+            </div>
+            <div class="amenity-card">
+              <i class="fas fa-plane-arrival"></i>
+              <h4>Airport Chauffeur</h4>
+              <p>Bespoke luxury sedan transfers upon request</p>
+            </div>
+            <div class="amenity-card">
+              <i class="fas fa-baby"></i>
+              <h4>Family & Kids Club</h4>
+              <p>Professional youth activity programs and concierge</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Leadership -->
+      <section class="team-section">
+        <div class="container">
+          <h2 class="section-title">Leadership & Hospitality Curators</h2>
+          <p class="section-subtitle">The dedicated professionals crafting your experience</p>
+          
+          <div class="team-grid">
+            <div class="team-card">
+              <div class="team-avatar"><i class="fas fa-user-tie"></i></div>
+              <h4>Margaret Thornton</h4>
+              <p class="role">Founder & Executive Chair</p>
+              <p>Over four decades of visionary stewardship creating unforgettable hotel experiences.</p>
+            </div>
+
+            <div class="team-card">
+              <div class="team-avatar"><i class="fas fa-user-shield"></i></div>
+              <h4>James Mitchell</h4>
+              <p class="role">General Manager</p>
+              <p>Dedicated to ensuring our five-star standards of service are fulfilled flawlessly.</p>
+            </div>
+
+            <div class="team-card">
+              <div class="team-avatar"><i class="fas fa-utensil-spoon"></i></div>
+              <h4>Chef Sofia Chen</h4>
+              <p class="role">Executive Master Chef</p>
+              <p>Three Michelin Stars recipient infusing global culinary innovation into our kitchens.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================================================
+         PAGE 7: CONTACT US VIEW
+         ========================================================================== -->
+    <div class="page" id="page-contact">
+      <section class="page-header">
+        <div class="container">
+          <h1>Contact & Concierge</h1>
+          <p class="search-summary">Our team is available 24/7 to assist with your bookings and inquiries</p>
+        </div>
+      </section>
+
+      <section class="contact-section">
+        <div class="container">
+          <div class="contact-grid">
+            
+            <!-- Contact Info Cards -->
+            <div class="contact-info-cards">
+              <div class="contact-info-card">
+                <div class="icon-box"><i class="fas fa-map-marker-alt"></i></div>
+                <div>
+                  <h4>Sanctuary Address</h4>
+                  <p>123 Luxury Avenue, Downtown<br>New York, NY 10001, United States</p>
+                </div>
+              </div>
+
+              <div class="contact-info-card">
+                <div class="icon-box"><i class="fas fa-phone-alt"></i></div>
+                <div>
+                  <h4>Direct Telephony</h4>
+                  <p>Reservations: +1 (555) 123-4567<br>Front Desk & Concierge: +1 (555) 123-4568</p>
+                </div>
+              </div>
+
+              <div class="contact-info-card">
+                <div class="icon-box"><i class="fas fa-envelope"></i></div>
+                <div>
+                  <h4>Electronic Mail</h4>
+                  <p>Reservations: stay@grandhorizon.com<br>Press & Corporate: info@grandhorizon.com</p>
+                </div>
+              </div>
+
+              <div class="contact-info-card">
+                <div class="icon-box"><i class="fas fa-clock"></i></div>
+                <div>
+                  <h4>Concierge Service Hours</h4>
+                  <p>Front Desk: 24 Hours, 7 Days a Week<br>Concierge Desk: 06:00 – 23:00 Daily</p>
+                </div>
+              </div>
+
+              <div class="contact-info-card">
+                <div class="icon-box"><i class="fas fa-globe-americas"></i></div>
+                <div>
+                  <h4>Connect With Us</h4>
+                  <div style="font-size: 1.3rem; display: flex; gap: 16px; margin-top: 8px;">
+                    <a href="#" style="color: var(--accent);"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: var(--accent);"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color: var(--accent);"><i class="fab fa-tripadvisor"></i></a>
+                    <a href="#" style="color: var(--accent);"><i class="fab fa-linkedin"></i></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Message Form -->
+            <div class="contact-form-card">
+              <h2><i class="fas fa-paper-plane"></i> Send Us an Inquiry</h2>
+              
+              <form onsubmit="submitContact(event)">
+                <div class="contact-row">
+                  <div class="form-group">
+                    <label for="contactFirstName">First Name</label>
+                    <input type="text" id="contactFirstName" placeholder="e.g. John" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="contactLastName">Last Name</label>
+                    <input type="text" id="contactLastName" placeholder="e.g. Doe" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="contactEmail">Email Address</label>
+                  <input type="email" id="contactEmail" placeholder="e.g. john@example.com" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="contactSubject">Inquiry Subject</label>
+                  <select id="contactSubject">
+                    <option value="General Inquiry">General Hospitality Inquiry</option>
+                    <option value="Reservation Assistance">Reservation & Suite Assistance</option>
+                    <option value="Event Planning">Private Gala & Wedding Planning</option>
+                    <option value="Corporate Partnership">Corporate Partnership</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="contactMessage">Your Message</label>
+                  <textarea id="contactMessage" placeholder="How may our concierge team be of service to you?" required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                  <i class="fas fa-paper-plane"></i> Dispatch Message to Concierge
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Embedded Google Map -->
+      <section class="map-section">
+        <div class="container">
+          <div class="map-container">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.183792036408!2d-73.9857!3d40.7484!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1" 
+              allowfullscreen 
+              loading="lazy"
+              title="Grand Horizon Location Map">
+            </iframe>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================================================
+         APPLICATION FOOTER
+         ========================================================================== -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          
+          <div class="footer-section">
+            <h3><i class="fas fa-hotel"></i> Grand Horizon</h3>
+            <p>Experience world-class hospitality and bespoke stays at Grand Horizon Hotel. A five-star architectural jewel serving discerning travellers since 1987.</p>
+          </div>
+
+          <div class="footer-section">
+            <h4>Quick Navigation</h4>
+            <ul>
+              <li><a onclick="navigate('home')">Home Page</a></li>
+              <li><a onclick="navigate('rooms')">Accommodations & Suites</a></li>
+              <li><a onclick="navigate('about')">Our History & Legacy</a></li>
+              <li><a onclick="navigate('contact')">Concierge & Contact</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h4>Direct Concierge</h4>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Luxury Avenue, Downtown</p>
+            <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+            <p><i class="fas fa-envelope"></i> stay@grandhorizon.com</p>
+          </div>
+
+          <div class="footer-section">
+            <h4>Database Tools</h4>
+            <p>SQLite 3 database with active in-memory and local persistence.</p>
+            <button class="btn btn-primary btn-sm" onclick="exportSQLiteDatabase()" style="margin-top: 8px;">
+              <i class="fas fa-download"></i> Download hotel.db
+            </button>
+          </div>
+
+        </div>
+
+        <div class="footer-bottom">
+          <p>&copy; 2026 Grand Horizon Luxury Hotel & Resorts. All Rights Reserved. Powered by SQLite 3.</p>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- /appWrapper -->
+
+  <!-- SQLite WebAssembly Engine (sql.js) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+
+  <!-- Modular Application Logic -->
+  <script src="js/app.js"></script>
+</body>
+</html>
